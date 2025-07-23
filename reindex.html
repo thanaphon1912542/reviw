@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รีวิวจากผู้ใช้งาน</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #0a0a0a;
+            --card-bg: #141414;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-light: #e0e0e0;
+            --text-muted: #888;
+            --star-color: #f39c12;
+            --star-bg: #333;
+            --star-color-rgb: 243, 156, 18; /* เพิ่มสำหรับ Glow Effect */
+        }
+
+        /* --- เอฟเฟกต์ --- */
+        @keyframes subtleShake {
+            0%, 100% { transform: scale(0.95) translateX(0); }
+            25% { transform: scale(0.95) translateX(2px); }
+            75% { transform: scale(0.95) translateX(-2px); }
+        }
+
+        @keyframes starGlow {
+            0%, 100% { filter: drop-shadow(0 0 3px var(--star-color)); }
+            50% { filter: drop-shadow(0 0 0px var(--star-color)); }
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            margin: 0;
+            padding: 1.5rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .review-container {
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .review-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .review-header h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .review-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .review-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+
+        .review-card.updating {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        
+        /* ✅ เพิ่ม class สำหรับการสั่น */
+        .review-card.shaking {
+            animation: subtleShake 0.3s ease-in-out;
+        }
+
+        .review-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reviewer-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .review-stars svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* ✅ เพิ่ม class สำหรับดาวกะพริบ */
+        .review-stars svg.glowing-star {
+            animation: starGlow 1.5s ease-in-out infinite alternate;
+        }
+
+        .star-filled { color: var(--star-color); }
+        .star-empty { color: var(--star-bg); }
+        
+        .review-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin: 0;
+            min-height: 4.5em;
+        }
+
+        .review-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="review-container">
+        <div class="review-header">
+            <h2>รีวิวจากผู้ใช้งานจริง</h2>
+            <p>ความพึงพอใจและการันตีจากลูกค้าของเรา</p>
+        </div>
+        <div class="review-card" id="single-review-card">
+            <div class="review-card-header">
+                <span class="reviewer-name" id="reviewer-name"></span>
+                <div class="review-stars" id="review-stars"></div>
+            </div>
+            <p class="review-text" id="review-text"></p>
+            <div class="review-time" id="review-time"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reviewCard = document.getElementById('single-review-card');
+            const reviewerNameEl = document.getElementById('reviewer-name');
+            const reviewStarsEl = document.getElementById('review-stars');
+            const reviewTextEl = document.getElementById('review-text');
+            const reviewTimeEl = document.getElementById('review-time');
+
+            const names = [
+                "สมชาย", "พรเทพ", "อารียา", "ธิดารัตน์", "ณัฐวุฒิ", "ปรีชา", "สุภาพร", 
+                "กนกวรรณ", "วิรัตน์", "สมศรี", "มานพ", "จินตนา", "พีรพล", "ศิริพร", "ธนากร"
+            ];
+            let availableNames = [];
+
+            const reviews = [
+                { rating: 5, text: "เว็บนี้จ่ายจริงครับ ไม่เคยมีปัญหาเลย แนะนำเลยครับ!" },
+                { rating: 5, text: "เกมแตกง่ายมากค่ะ ได้กำไรทุกวันเลย ชอบมากๆ" },
+                { rating: 5, text: "ระบบฝาก-ถอนออโต้ไวมาก ไม่ถึง 10 วินาทีเงินเข้าแล้ว สุดยอด!" },
+                { rating: 5, text: "เล่นมาหลายเว็บ ชอบเว็บนี้ที่สุดแล้วครับ มั่นคง ปลอดภัย" },
+                { rating: 5, text: "แอดมินบริการดีมากค่ะ ตอบไว ใส่ใจลูกค้าดีจริงๆ" },
+                { rating: 5, text: "โบนัสแตกบ่อยจริง คอนเฟิร์มอีกเสียงครับ ไม่ผิดหวัง" },
+                { rating: 4, text: "โดยรวมดีครับ แต่บางทีเว็บก็แอบช้าไปนิดนึง ให้ 4 ดาวครับ" },
+                { rating: 4, text: "จ่ายจริงแต่ถอนช้าไปหน่อยค่ะ รอประมาณ 5 นาที แต่ก็โอเคค่ะ" },
+                { rating: 4, text: "เกมสนุกดีค่ะ แต่บางเกมน่าจะมีโปรโมชั่นเพิ่มอีกนิดนึง" },
+                { rating: 4, text: "แตกดีครับ แต่ถ้าแอดมินตอบเร็วกว่านี้จะดีมากเลยครับ" }
+            ];
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+            
+            function getUniqueName() {
+                if (availableNames.length === 0) {
+                    availableNames = [...names];
+                    shuffleArray(availableNames);
+                }
+                return availableNames.pop();
+            }
+
+            function createStars(rating) {
+                let starsHTML = '';
+                // ✅ เพิ่ม class 'glowing-star' ให้กับดาวที่มีคะแนน
+                const starIcon = `<svg class="star-filled glowing-star" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>`;
+                const emptyStarIcon = `<svg class="star-empty" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>`;
+                for (let i = 0; i < 5; i++) {
+                    starsHTML += i < rating ? starIcon : emptyStarIcon;
+                }
+                return starsHTML;
+            }
+
+            function updateReviewContent() {
+                const randomReview = reviews[Math.floor(Math.random() * reviews.length)];
+                
+                reviewCard.classList.add('updating');
+                
+                setTimeout(() => {
+                    reviewerNameEl.textContent = getUniqueName();
+                    reviewStarsEl.innerHTML = createStars(randomReview.rating);
+                    reviewTextEl.textContent = `“${randomReview.text}”`;
+                    reviewTimeEl.textContent = 'เมื่อสักครู่';
+                    
+                    reviewCard.classList.remove('updating');
+                    
+                    // ✅ เพิ่มและลบ class 'shaking' เพื่อให้สั่นตอน fade in
+                    reviewCard.classList.add('shaking');
+                    setTimeout(() => {
+                        reviewCard.classList.remove('shaking');
+                    }, 300); // ระยะเวลาของ animation .subtleShake
+                }, 400);
+            }
+            
+            updateReviewContent();
+
+            function scheduleNextUpdate() {
+                const randomInterval = Math.random() * (10000 - 5000) + 5000;
+                setTimeout(() => {
+                    updateReviewContent();
+                    scheduleNextUpdate();
+                }, randomInterval);
+            }
+            
+            scheduleNextUpdate();
+        });
+    </script>
+
+</body>
+</html>
